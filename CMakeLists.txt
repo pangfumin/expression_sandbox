@@ -1,17 +1,7 @@
 cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+project(expression_sandbox)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE Release)
-#set(ROS_BUILD_TYPE RelWithDebInfo)
-#set(ROS_BUILD_TYPE Debug)
 
-rosbuild_init()
 
 add_definitions(-std=c++11  -Wno-enum-compare -Wno-unused-local-typedefs -gdwarf-2)
 
@@ -20,35 +10,26 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+find_package(Eigen3  REQUIRED)
+find_package( Ceres 1.6.0 QUIET )
+MESSAGE(STATUS "CERES found")
+find_package(Boost  1.54.0  	        # Minimum or EXACT version e.g. 1.36.0
+		REQUIRED             					# Fail with error if Boost is not found
+		)
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-# eigen 2 or 3
-find_path(EIGEN_INCLUDE_DIR Eigen/Core
-	/usr/local/include/eigen3
-	/usr/local/include/eigen2
-	/usr/local/include/eigen
-	/usr/include/eigen3
-	/usr/include/eigen2
-	/usr/include/eigen
-	/opt/ros/diamondback/stacks/geometry/eigen/include
-)
-include_directories(${EIGEN_INCLUDE_DIR})
+
+
+include_directories(
+	include
+	${EIGEN_INCLUDE_DIR}
+		  ${OpenCV_INCLUDE_DIRS}
+		  )
 
 add_executable(test_pe src/test_pe.cpp)
 
 add_executable(test_pge_one benchmark/one_rotation_projection/test_pge.cpp)
 add_executable(test_pge_tow benchmark/two_rotations_projection/test_pge.cpp)
-
 add_executable(TestTypedExpresssions src/TestTypedExpressions.cpp)
-#set_target_properties(TestTypedExpresssions PROPERTIES COMPILE_FLAGS "-fverbose-asm -Wa,-adhln=TestTypedExpresssions.S,")
 
 
 
@@ -211,82 +192,72 @@ set(N_ROTATIONS
 	${20_ROTATIONS}
 )
 
-rosbuild_add_executable(benchmarker 
-	benchmark/malloc_count.c
-	benchmark/StopWatch.cpp
-	benchmark/EvalVariants.cpp
-	benchmark/Benchmarker.cpp
-#	${N_ROTATIONS}
-#	${ONE_ROTATION_PROJECTION}
-#	${TWO_ROTATIONS_PROJECTION}
-)
+# add_executable(benchmarker 
+# 	benchmark/malloc_count.c
+# 	benchmark/StopWatch.cpp
+# 	benchmark/EvalVariants.cpp
+# 	benchmark/Benchmarker.cpp
+# #	${N_ROTATIONS}
+# #	${ONE_ROTATION_PROJECTION}
+# #	${TWO_ROTATIONS_PROJECTION}
+# )
 
 
 
-target_link_libraries(benchmarker dl rt)
-#set_target_properties(benchmarker PROPERTIES COMPILE_FLAGS "-finline-limit=10000000")
-target_link_libraries(benchmarker boost_program_options)
+# target_link_libraries(benchmarker dl rt)
+# #set_target_properties(benchmarker PROPERTIES COMPILE_FLAGS "-finline-limit=10000000")
+# target_link_libraries(benchmarker boost_program_options)
 
 
-#add_executable(test_exp src/test.cpp 
-#     src/Expressions.cpp
-#     src/ExpressionImpl.cpp)
+# #add_executable(test_exp src/test.cpp 
+# #     src/Expressions.cpp
+# #     src/ExpressionImpl.cpp)
      
-rosbuild_add_gtest(test_requirements
-  test/requirements.cpp 
-  test/TestTools.cpp
-  test/test_main.cpp
-)
+# rosbuild_add_gtest(test_requirements
+#   test/requirements.cpp 
+#   test/TestTools.cpp
+#   test/test_main.cpp
+# )
 
-rosbuild_add_gtest(test_expressions
-  test/TestTools.cpp
-  test/TestRotations.cpp
-  test/TestQuaternions.cpp
-  test/TestEuclideanPointsAndScalars.cpp
-  test/test_main.cpp
-)
+# rosbuild_add_gtest(test_expressions
+#   test/TestTools.cpp
+#   test/TestRotations.cpp
+#   test/TestQuaternions.cpp
+#   test/TestEuclideanPointsAndScalars.cpp
+#   test/test_main.cpp
+# )
 
 
-# rosbuild_add_executable(prepare_eigen_problem src/prepare_eigen_problem.cpp)
-# target_link_libraries(normalized_cut lapack blas)
 
-#FIND_PACKAGE(Ceres REQUIRED)
-#INCLUDE_DIRECTORIES(${CERES_INCLUDES} )
 
-# set(CGNUPLOT $ENV{HOME}/sources/gtl/vsv_stack/cgnuplot)
-# INCLUDE_DIRECTORIES(${CGNUPLOT}/include)
-# LINK_DIRECTORIES(${CGNUPLOT}/lib)
-# SET(CGNUPLOT_LIBRARIES cgnuplot)
+# add_executable(optimise_rotations_tex
+#     benchmark/StopWatch.cpp
+#     seals/optimise_rotations.cpp
+#     seals/rotation_errors.cpp
+#     seals/states.cpp
+# )
+# add_executable(optimise_rotations_ceres
+# 	benchmark/StopWatch.cpp
+#     seals/optimise_rotations.cpp
+#     seals/rotation_errors.cpp
+#     seals/states.cpp
+# )
+# set_target_properties(optimise_rotations_ceres PROPERTIES COMPILE_FLAGS "-DUSE_CERES_AD=1")
 
-rosbuild_add_executable(optimise_rotations_tex
-    benchmark/StopWatch.cpp
-    seals/optimise_rotations.cpp
-    seals/rotation_errors.cpp
-    seals/states.cpp
-)
-rosbuild_add_executable(optimise_rotations_ceres
-	benchmark/StopWatch.cpp
-    seals/optimise_rotations.cpp
-    seals/rotation_errors.cpp
-    seals/states.cpp
-)
-set_target_properties(optimise_rotations_ceres PROPERTIES COMPILE_FLAGS "-DUSE_CERES_AD=1")
+# add_executable(optimise_rotations_tex_m
+#     benchmark/StopWatch.cpp
+#     seals/optimise_rotations.cpp
+#     seals/rotation_errors.cpp
+#     seals/states.cpp
+# )
+# set_target_properties(optimise_rotations_tex_m PROPERTIES COMPILE_FLAGS "-DMEASURE_IN_REPEAT=1")
 
-rosbuild_add_executable(optimise_rotations_tex_m
-    benchmark/StopWatch.cpp
-    seals/optimise_rotations.cpp
-    seals/rotation_errors.cpp
-    seals/states.cpp
-)
-set_target_properties(optimise_rotations_tex_m PROPERTIES COMPILE_FLAGS "-DMEASURE_IN_REPEAT=1")
+# add_executable(optimise_rotations_ceres_m
+# 	benchmark/StopWatch.cpp
+#     seals/optimise_rotations.cpp
+#     seals/rotation_errors.cpp
+#     seals/states.cpp
+# )
+# set_target_properties(optimise_rotations_ceres_m PROPERTIES COMPILE_FLAGS "-DUSE_CERES_AD=1 -DMEASURE_IN_REPEAT=1")
 
-rosbuild_add_executable(optimise_rotations_ceres_m
-	benchmark/StopWatch.cpp
-    seals/optimise_rotations.cpp
-    seals/rotation_errors.cpp
-    seals/states.cpp
-)
-set_target_properties(optimise_rotations_ceres_m PROPERTIES COMPILE_FLAGS "-DUSE_CERES_AD=1 -DMEASURE_IN_REPEAT=1")
-
-#target_link_libraries(optimise_rotations ${CERES_LIBRARIES} ${CGNUPLOT_LIBRARIES})
 

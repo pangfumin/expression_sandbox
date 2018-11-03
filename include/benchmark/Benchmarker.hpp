@@ -208,7 +208,7 @@ void BenchmarkInstance<Problem_> ::Statistics::SolvingVariantStat::calc() {
 
 
 template<typename Problem_>
-void BenchmarkInstance<Problem_>::printHeader(std::ostream& out, const int nameWidth, const std::string& sep, bool showErrors, bool relative = false) const {
+void BenchmarkInstance<Problem_>::printHeader(std::ostream& out, const int nameWidth, const std::string& sep, bool showErrors, bool relative) const {
   out << std::setw(nameWidth) << "Name" << sep;
   Statistics::outHeaderList(p, maxVariant, out, sep, showErrors, relative);
   out << std::endl;
